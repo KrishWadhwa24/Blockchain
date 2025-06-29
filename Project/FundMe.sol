@@ -28,7 +28,30 @@ interface AggregatorV3Interface {
 
 //To shorten the above interface
 
-import {PriceConverter} from "./PriceConverter.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+library PriceConverter {
+    function getPrice() internal view returns(uint256){
+        //Address : 0xfEefF7c3fB57d18C5C6Cdd71e45D2D0b4F9377bF //zksync sepolia testnet
+
+        //ABI : 
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(0xfEefF7c3fB57d18C5C6Cdd71e45D2D0b4F9377bF);
+        (,int256 price,,,)=priceFeed.latestRoundData();
+        //price of eth in terms of usd
+
+        return (uint256)(price*1e10);
+    }
+
+    function priceConverter(uint256 ethamount) internal view returns(uint256){
+        uint256 ethPrice = getPrice();
+        uint256 ethAmountInUsd = (ethPrice*ethamount)/1e18;
+        return ethAmountInUsd;
+    }
+
+    function getVersion() internal view returns (uint256)
+    {
+        return AggregatorV3Interface(0xfEefF7c3fB57d18C5C6Cdd71e45D2D0b4F9377bF).version();
+    }
+}
 
 //To reduce the gas price of deploying a contract
 //we will use 2 keywords constant and immutable
@@ -83,6 +106,8 @@ contract FundMe {
         funders = new address[](0);
         //withdraw the funds
 
+        /*
+
         //transfer
         //msg.sender = address
         //payable(msg.sender) = payable address
@@ -92,6 +117,9 @@ contract FundMe {
         bool sendSuccess = payable(msg.sender).send(address(this).balance);
         require(sendSuccess, "Send failed");
 
+        */
+
+        
         //call
 
         (bool callSuccess, ) = payable(msg.sender).call{
